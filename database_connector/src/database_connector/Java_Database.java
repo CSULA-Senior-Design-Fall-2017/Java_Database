@@ -22,9 +22,9 @@ public class Java_Database {
 			 * 
 			 * @param password: password for specific user, root has no password
 			 */
-			String url = "jdbc:mysql://localhost:3306/company";
+			String url = "jdbc:mysql://localhost:3306/directstem";
 			String username = "root";
-			String password = "";
+			String password = "directstem";
 
 			System.out.println("Connecting database...");
 			connection = DriverManager.getConnection(url, username, password);
@@ -48,11 +48,6 @@ public class Java_Database {
 						printResults(resultSet);
 					} catch (SQLException e) {
 						System.out.println("Error: No Search Results");
-						System.out.println("Press any Key to continue:");
-						// should probably use an event listener for key
-						// presses
-						// I'll update this later
-						String temp = keyboard.nextLine();
 					}
 				}
 			} while (!done);
@@ -88,10 +83,86 @@ public class Java_Database {
 			System.out.print(row + "\n");
 			row = "";
 		}
-		System.out.println("Hit any key to continue:");
-		String temp = keyboard.nextLine();// again i'll fix this later!
 	}
 
+	//Create user
+	private static void createUser(String[] values){
+		String sql = "INSERT INTO Users (firstname, lastname, username, password, email) VALUES (?, ?, ?, ?, ?)";
+
+		PreparedStatement statement;
+		try {
+			statement = connection.prepareStatement(sql);
+			for(int i = 0; i < values.length; i++){
+				statement.setString(i + 1, values[i]);
+			}
+	
+			int rowsInserted = statement.executeUpdate();
+			if (rowsInserted > 0) {
+				System.out.println("A new user was inserted successfully!");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	private static String retrieveUser(String email){
+		String sql = "SELECT firstname, lastname, username FROM users WHERE email = " ;
+		sql += "\'" + email + "\'";
+
+		Statement statement;
+			String firstname = "";
+			String lastname = "";
+			String username = "";
+		try {
+			statement = connection.createStatement();
+			ResultSet result = statement.executeQuery(sql);
+			
+			firstname = result.getString(1);
+			lastname = result.getString(2);
+			username = result.getString(3);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+			String output = "User: %s, %s, %s";
+			return String.format(output, firstname, lastname, username);
+	}
+	
+	private static void updateUser(String[] newValues){
+		String sql = "UPDATE users SET password = ?, firstname = ?, lastname = ?, email = ? WHERE username = ?";
+
+		PreparedStatement statement;
+		try {
+			statement = connection.prepareStatement(sql);
+			for(int i = 0; i < newValues.length; i++){
+				statement.setString(i + 1, newValues[i]);
+			}
+	
+			int rowsUpdated = statement.executeUpdate();
+			if (rowsUpdated > 0) {
+				System.out.println("An existing user was updated successfully!");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void deleteUser(String username){
+		String sql = "DELETE FROM users WHERE username = ?";
+
+		PreparedStatement statement;
+		try {
+			statement = connection.prepareStatement(sql);
+			statement.setString(1, username);
+	
+			int rowsDeleted = statement.executeUpdate();
+			if (rowsDeleted > 0) {
+				System.out.println("A user was deleted successfully!");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	/*
 	 * All Display functions are remove from main so that main is more readable
 	 * without all the interface options getting in the way
